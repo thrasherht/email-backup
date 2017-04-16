@@ -9,12 +9,10 @@ SENT='true'
 INBOX='true'
 DAYS="$3"
 DIR_PATH="/home/$1/mail/$2"
-ARCHIVE_DIR="/home/$1/mail/$2/{$i}.Archive"
-SENT_DIR="/home/$1/mail/$2/{$i}.Sent"
 
 #Move the files or copy the files
 TRANSFER_METHOD="rsync"
-RSYNC="rsync -avHP"
+RSYNC="rsync -aH"
 MV="mv"
 
 #Check for no variables
@@ -23,9 +21,11 @@ if [ $# == 0 ] ; then
     exit 1;
 fi
 
-transfer_email(){
-    echo "find $1/cur/ -type f -mtime +$DAYS -exec $2 {} $3 \;" 
-    echo "find $1/new/ -type f -mtime +$DAYS -exec $2 {} $3 \;"
+move_email(){
+    find $1/cur/ $1/new/ -type f -mtime +$DAYS -exec $2 {} "$3" \;
+}
+copy_email(){
+
 }
 
 #show number days value
@@ -36,13 +36,14 @@ if [ $SENT == true ] ; then
         pushd $DIR_PATH 1>/dev/null
         for i in */;
         do
-                BACKUP_DIR="/backup/email_backup/$DATE/$i/Sent"
+                BACKUP_DIR="/backup/email_backup/$DATE/${i}Sent"
+                SENT_DIR="/home/$1/mail/$2/$i.Sent"
                 mkdir -p $BACKUP_DIR
                 echo "Created backup directory at $BACKUP_DIR"
                     if [ $TRANSFER_METHOD == rsync ] ; then
-                transfer_email $SENT_DIR $RSYNC $BACKUP_DIR
+                copy_email $SENT_DIR "$RSYNC" $BACKUP_DIR
                     else
-                transfer_email $SENT_DIR $MV $BACKUP_DIR
+                move_email $SENT_DIR "$MV" $BACKUP_DIR
                     fi
         done
         popd 1>/dev/null
@@ -52,15 +53,17 @@ if [ $INBOX == true ] ; then
         pushd $DIR_PATH 1>/dev/null
         for i in */;
         do
-                BACKUP_DIR="/backup/email_backup/$DATE/$i/Archive"
+                BACKUP_DIR="/backup/email_backup/$DATE/${i}Archive"
+                ARCHIVE_DIR="/home/$1/mail/$2/$i.Archive"
                 mkdir -p $BACKUP_DIR
                 echo "Created backup directory at $BACKUP_DIR"
                     if [ $TRANSFER_METHOD == rsync ] ; then
-                transfer_email $ARCHIVE_DIR $RSYNC $BACKUP_DIR
+                transfer_email $ARCHIVE_DIR "$RSYNC" $BACKUP_DIR
                     else
-                transfer_email $ARCHIVE_DIR $MV $BACKUP_DIR
+                transfer_email $ARCHIVE_DIR "$MV" $BACKUP_DIR
                     fi
         done
         popd 1>/dev/null
 fi
 echo "Backup finished"
+
