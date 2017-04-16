@@ -11,9 +11,8 @@ DAYS="$3"
 DIR_PATH="/home/$1/mail/$2"
 
 #Move the files or copy the files
-TRANSFER_METHOD="rsync"
-RSYNC="rsync -aH"
-MV="mv"
+TRANSFER_METHOD="copy"
+
 
 #Check for no variables
 if [ $# == 0 ] ; then
@@ -22,10 +21,10 @@ if [ $# == 0 ] ; then
 fi
 
 move_email(){
-    find $1/cur/ $1/new/ -type f -mtime +$DAYS -exec $2 {} "$3" \;
+    find $1/{cur,new}/ -type f -mtime +$DAYS -exec mv {} "$3" \;
 }
 copy_email(){
-
+    rsync -aH $1/{cur,new}/ $2
 }
 
 #show number days value
@@ -40,10 +39,10 @@ if [ $SENT == true ] ; then
                 SENT_DIR="/home/$1/mail/$2/$i.Sent"
                 mkdir -p $BACKUP_DIR
                 echo "Created backup directory at $BACKUP_DIR"
-                    if [ $TRANSFER_METHOD == rsync ] ; then
-                copy_email $SENT_DIR "$RSYNC" $BACKUP_DIR
+                    if [ $TRANSFER_METHOD == copy ] ; then
+                copy_email $SENT_DIR $BACKUP_DIR
                     else
-                move_email $SENT_DIR "$MV" $BACKUP_DIR
+                move_email $SENT_DIR $BACKUP_DIR
                     fi
         done
         popd 1>/dev/null
@@ -57,13 +56,14 @@ if [ $INBOX == true ] ; then
                 ARCHIVE_DIR="/home/$1/mail/$2/$i.Archive"
                 mkdir -p $BACKUP_DIR
                 echo "Created backup directory at $BACKUP_DIR"
-                    if [ $TRANSFER_METHOD == rsync ] ; then
-                transfer_email $ARCHIVE_DIR "$RSYNC" $BACKUP_DIR
+                    if [ $TRANSFER_METHOD == copy ] ; then
+                copy_email $ARCHIVE_DIR $BACKUP_DIR
                     else
-                transfer_email $ARCHIVE_DIR "$MV" $BACKUP_DIR
+                move_email $ARCHIVE_DIR $BACKUP_DIR
                     fi
         done
         popd 1>/dev/null
 fi
 echo "Backup finished"
+
 
