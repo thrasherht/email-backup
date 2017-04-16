@@ -8,9 +8,9 @@ DATE=`date +%F_%H:%M`
 SENT='true'
 INBOX='true'
 DAYS="$3"
-DIR_PATH="/home/$1/mail/$2/$i"
-ARCHIVE_DIR="$DIR_PATH.Archive"
-SENT_DIR="$DIR_PATH.Sent"
+DIR_PATH="/home/$1/mail/$2"
+ARCHIVE_DIR="/home/$1/mail/$2/{$i}.Archive"
+SENT_DIR="/home/$1/mail/$2/{$i}.Sent"
 
 #Move the files or copy the files
 TRANSFER_METHOD="rsync"
@@ -24,8 +24,8 @@ if [ $# == 0 ] ; then
 fi
 
 transfer_email(){
-    find $1/cur/ -type f -mtime +$DAYS -exec $2 {} $3 \; 2>/dev/null
-    find $1/new/ -type f -mtime +$DAYS -exec $2 {} $3 \; 2>/dev/null
+    echo "find $1/cur/ -type f -mtime +$DAYS -exec $2 {} $3 \;" 
+    echo "find $1/new/ -type f -mtime +$DAYS -exec $2 {} $3 \;"
 }
 
 #show number days value
@@ -33,7 +33,8 @@ echo "backing up files older then $3"
 
 #Backup emails in SENT_DIR
 if [ $SENT == true ] ; then
-        for i in `ls /home/$1/mail/$2`;
+        pushd $DIR_PATH 1>/dev/null
+        for i in */;
         do
                 BACKUP_DIR="/backup/email_backup/$DATE/$i/Sent"
                 mkdir -p $BACKUP_DIR
@@ -44,10 +45,12 @@ if [ $SENT == true ] ; then
                 transfer_email $SENT_DIR $MV $BACKUP_DIR
                     fi
         done
+        popd 1>/dev/null
 fi
 #Backup any emails in ARCHIVE_DIR
 if [ $INBOX == true ] ; then
-        for i in `ls /home/$1/mail/$2`;
+        pushd $DIR_PATH 1>/dev/null
+        for i in */;
         do
                 BACKUP_DIR="/backup/email_backup/$DATE/$i/Archive"
                 mkdir -p $BACKUP_DIR
@@ -58,5 +61,6 @@ if [ $INBOX == true ] ; then
                 transfer_email $ARCHIVE_DIR $MV $BACKUP_DIR
                     fi
         done
+        popd 1>/dev/null
 fi
 echo "Backup finished"
