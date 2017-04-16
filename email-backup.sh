@@ -23,7 +23,7 @@ if [ $# == 0 ] ; then
     exit 1;
 fi
 
-move_email(){
+transfer_email(){
     find $1/cur/ -type f -mtime +$DAYS -exec $2 {} $3 \; 2>/dev/null
     find $1/new/ -type f -mtime +$DAYS -exec $2 {} $3 \; 2>/dev/null
 }
