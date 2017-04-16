@@ -7,18 +7,26 @@ USAGE="Usage: email-backup.sh [username] [domain] [Older then days]"
 DATE=`date +%F_%H:%M`
 SENT='true'
 INBOX='true'
+DAYS="$3"
 DIR_PATH="/home/$1/mail/$2/$i"
 ARCHIVE_DIR="$DIR_PATH.Archive"
 SENT_DIR="$DIR_PATH.Sent"
 
 #Move the files or copy the files
-MV="false"
+TRANSFER_METHOD="rsync"
+RSYNC="rsync -avHP"
+MV="mv"
 
 #Check for no variables
 if [ $# == 0 ] ; then
     echo $USAGE
     exit 1;
 fi
+
+move_email(){
+    find $1/cur/ -type f -mtime +$DAYS -exec $2 {} $3 \; 2>/dev/null
+    find $1/new/ -type f -mtime +$DAYS -exec $2 {} $3 \; 2>/dev/null
+}
 
 #show number days value
 echo "backing up files older then $3"
@@ -30,12 +38,10 @@ if [ $SENT == true ] ; then
                 BACKUP_DIR="/backup/email_backup/$DATE/$i/Sent"
                 mkdir -p $BACKUP_DIR
                 echo "Created backup directory at $BACKUP_DIR"
-                    if [ $MV == true ] ; then
-                find $SENT_DIR/cur/ -type f -mtime +$3 -exec mv {} $BACKUP_DIR \; 2>/dev/null
-                find $SENT_DIR/new/ -type f -mtime +$3 -exec mv {} $BACKUP_DIR \; 2>/dev/null
+                    if [ $TRANSFER_METHOD == rsync ] ; then
+                transfer_email $SENT_DIR $RSYNC $BACKUP_DIR
                     else
-                find $SENT_DIR/cur/ -type f -mtime +$3 -exec rsync -avHP {} $BACKUP_DIR \; 2>/dev/null
-                find $SENT_DIR/new/ -type f -mtime +$3 -exec rsync -avHP {} $BACKUP_DIR \; 2>/dev/null
+                transfer_email $SENT_DIR $MV $BACKUP_DIR
                     fi
         done
 fi
@@ -46,12 +52,10 @@ if [ $INBOX == true ] ; then
                 BACKUP_DIR="/backup/email_backup/$DATE/$i/Archive"
                 mkdir -p $BACKUP_DIR
                 echo "Created backup directory at $BACKUP_DIR"
-                    if [ $MV == true ] ; then
-                find $ARCHIVE_DIR/cur/ -type f -mtime +$3 -exec mv {} $BACKUP_DIR \; 2>/dev/null
-                find $ARCHIVE_DIR/new/ -type f -mtime +$3 -exec mv {} $BACKUP_DIR \; 2>/dev/null
+                    if [ $TRANSFER_METHOD == rsync ] ; then
+                transfer_email $ARCHIVE_DIR $RSYNC $BACKUP_DIR
                     else
-                find $ARCHIVE_DIR/cur/ -type f -mtime +$3 -exec rsync -avHP {} $BACKUP_DIR \; 2>/dev/null
-                find $ARCHIVE_DIR/new/ -type f -mtime +$3 -exec rsync -avHP {} $BACKUP_DIR \; 2>/dev/null
+                transfer_email $ARCHIVE_DIR $MV $BACKUP_DIR
                     fi
         done
 fi
