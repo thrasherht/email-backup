@@ -11,18 +11,16 @@ if [ $# == 0 ] ; then
     exit 1;
 fi
 
-#Check which cpanel user owns domain
-USER=`/scripts/whoowns $1`
-
 #Setup variables
 DATE=`date +%F_%H:%M`
 SENT='true'
 INBOX='true'
 DAYS="$2"
 DOMAIN="$1"
-DIR_PATH="/home/$USER/mail/$DOMAIN"
+BACKUP_PATH="/backup/email_backups"
+DIR_PATH="/home*/*/mail/$DOMAIN"
 
-#Move the files or copy the files
+#Set transfer method. Valid choices are "copy" and "move".
 TRANSFER_METHOD="move"
 
 
@@ -33,22 +31,22 @@ if [ $# == 0 ] ; then
 fi
 
 move_email(){
-    find $1/{cur,new}/ -type f -mtime +$DAYS -exec mv {} "$3" \;
+    find $1/{cur,new}/ -type f -mtime +$DAYS -exec mv {} "$2" \;
 }
 copy_email(){
     rsync -aH $1/{cur,new}/ $2
 }
 
 #show number days value
-echo "backing up files older then $3"
+echo "backing up files older then $DAYS"
 
 #Backup emails in SENT_DIR
 if [ $SENT == true ] ; then
         pushd $DIR_PATH 1>/dev/null
         for i in */;
         do
-                BACKUP_DIR="/backup/email_backup/$DATE/${i}Sent"
-                SENT_DIR="/home/$USER/mail/$DOMAIN/$i.Sent"
+                BACKUP_DIR="$BACKUP_PATH/$DATE/${i}Sent"
+                SENT_DIR="$DIR_PATH/$i.Sent"
                 mkdir -p $BACKUP_DIR
                 echo "Created backup directory at $BACKUP_DIR"
                     if [ $TRANSFER_METHOD == copy ] ; then
@@ -67,8 +65,8 @@ if [ $INBOX == true ] ; then
         pushd $DIR_PATH 1>/dev/null
         for i in */;
         do
-                BACKUP_DIR="/backup/email_backup/$DATE/${i}Archive"
-                ARCHIVE_DIR="/home/$USER/mail/$DOMAIN/$i.Archive"
+                BACKUP_DIR="$BACKUP_PATH/$DATE/${i}Archive"
+                ARCHIVE_DIR="$DIR_PATH/$i.Archive"
                 mkdir -p $BACKUP_DIR
                 echo "Created backup directory at $BACKUP_DIR"
                     if [ $TRANSFER_METHOD == copy ] ; then
