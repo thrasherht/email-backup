@@ -52,12 +52,12 @@ if [ $SENT == true ] ; then
                 mkdir -p $BACKUP_DIR
                 echo "Created backup directory at $BACKUP_DIR"
                     if [ $TRANSFER_METHOD == copy ] ; then
-                copy_email $SENT_DIR $BACKUP_DIR
+                        copy_email $SENT_DIR $BACKUP_DIR
                     elif [ $TRANSFER_METHOD == move ]; then
-                move_email $SENT_DIR $BACKUP_DIR
-		else
-		echo "Invalid transfer method!"
-		exit 1;
+                        move_email $SENT_DIR $BACKUP_DIR
+                    else
+                        echo "Invalid transfer method!"
+                        exit 1;
                     fi
         done
         popd 1>/dev/null
@@ -72,12 +72,12 @@ if [ $INBOX == true ] ; then
                 mkdir -p $BACKUP_DIR
                 echo "Created backup directory at $BACKUP_DIR"
                     if [ $TRANSFER_METHOD == copy ] ; then
-                copy_email $ARCHIVE_DIR $BACKUP_DIR
+                        copy_email $ARCHIVE_DIR $BACKUP_DIR
                     elif [ $TRANSFER_METHOD == move ]; then
-                move_email $ARCHIVE_DIR $BACKUP_DIR
-		else
-		echo "Invalid transfer method!"
-		exit 1;
+                        move_email $ARCHIVE_DIR $BACKUP_DIR
+                    else
+                        echo "Invalid transfer method!"
+                        exit 1;
                     fi
         done
         popd 1>/dev/null
